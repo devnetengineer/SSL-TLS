@@ -1,0 +1,120 @@
+HTTPS is the secure version of HTTP. This allows encrypted traffic when accessing web pages.
+
+Before we can install a certificate, ensure mod_ssl module is installed on your server:
+[root@localhost ~]# rpm -qa | grep mod_ssl
+[root@localhost ~]# yum install mod_ssl
+Last metadata expiration check: 18:52:55 ago on Sat 01 May 2021 08:12:38 PM EDT.
+Dependencies resolved.
+==============================================================================================================
+ Package          Architecture    Version                                            Repository          Size
+==============================================================================================================
+Installing:
+ mod_ssl          x86_64          1:2.4.37-30.module_el8.3.0+561+97fdbbcc            appstream          133 k
+
+Transaction Summary
+==============================================================================================================
+Install  1 Package
+
+Total download size: 133 k
+Installed size: 262 k
+Is this ok [y/N]: y
+Downloading Packages:
+mod_ssl-2.4.37-30.module_el8.3.0+561+97fdbbcc.x86_64.rpm                      819 kB/s | 133 kB     00:00    
+--------------------------------------------------------------------------------------------------------------
+Total                                                                         261 kB/s | 133 kB     00:00     
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                                                      1/1 
+  Installing       : mod_ssl-1:2.4.37-30.module_el8.3.0+561+97fdbbcc.x86_64                               1/1 
+  Running scriptlet: mod_ssl-1:2.4.37-30.module_el8.3.0+561+97fdbbcc.x86_64                               1/1 
+  Verifying        : mod_ssl-1:2.4.37-30.module_el8.3.0+561+97fdbbcc.x86_64                               1/1 
+Installed products updated.
+
+Installed:
+  mod_ssl-1:2.4.37-30.module_el8.3.0+561+97fdbbcc.x86_64                                                      
+
+Complete!
+[root@localhost ~]# 
+
+
+**mod_ssl module provides SSLv3 and TLS1.x+ support for Apache HTTP
+
+We will be using OPENSSL to create a self signed certificate.
+
+-req: creates a CSR as well as the self signed certificate
+-newkey rsa:4096: specifies the 4096 bits RSA key when generating the key
+-keyout /etc/pki/tls/private/yotighty.key: writes the key to the specified absolute path
+-x509: creates a self signed certificate instead of the CSR
+-out /etc/pki/tls/certs/yotighty.com: specifies where the self signed certificate will be saved to
+
+[root@localhost ~]# openssl req -newkey rsa:4096 -nodes -keyout /etc/pki/tls/private/yotighty.key -x509 -days 365 -out /etc/pki/tls/certs/yotighty.crt
+Generating a RSA private key
+................................................++++
+...........................++++
+writing new private key to '/etc/pki/tls/private/yotighty.key'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:
+State or Province Name (full name) []:
+Locality Name (eg, city) [Default City]:
+Organization Name (eg, company) [Default Company Ltd]:
+Organizational Unit Name (eg, section) []:
+Common Name (eg, your name or your server's hostname) []:
+Email Address []:
+
+Once the interactive session finishes, you will be able to see the self signed certificate under /etc/pki/tls/private/
+
+
+**If you would like to use a commercially signed certificates and only need the CSR, you can run the following command:
+
+openssl req -new -newkey rsa:4096 -nodes -keyout domain.key -out domain.csr \
+-subj "/C=CN/ST=STATE/L=CITY/O=ORG NAME/OU=Department/CN=DOMAIN_NAME/emailAddress=name@domain"
+
+Ex)
+[root@localhost ~]# openssl req -new -newkey rsa:4096 -nodes -keyout domain.key -out domain.csr \
+> -subj "/C=CN/ST=example/L=example/O=ORG NAME/OU=example/CN=example.com/emailAddress=test@example.com"
+Generating a RSA private key
+...........................................................................................................................................................++++
+.....................................................................................................................................................................................................................................................................................................++++
+writing new private key to 'domain.key'
+-----
+[root@localhost ~]# ls d*
+domain.csr  domain.key
+
+
+[root@localhost ~]# openssl s_client -connect localhost:443 -showcerts
+CONNECTED(00000003)
+
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 2311 bytes and written 369 bytes
+Verification error: self signed certificate
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Server public key is 4096 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 18 (self signed certificate)
+---
+
+
+
+
+
+
