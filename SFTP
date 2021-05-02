@@ -1,3 +1,52 @@
+SSH File Transfer Protocol (SFTP) is the secure version of the normal FTP. SFTP is comparable to SCP (Secure Copy) but permits more interactive process.
 
+[jason@spacewalk .ssh]$ sftp student@192.168.122.74
+Connected to student@192.168.122.74.
+sftp> ls
+sftp> lls
+id_rsa	id_rsa.pub  known_hosts
+sftp> pwd
+Remote working directory: /home/student
+sftp> lpwd
+Local working directory: /home/jason/.ssh
+sftp> whoami
+
+In the above example, 192.168.122.74 is the remote host. A number of commands like 'ls' can be used to navigate and list files
+on the remote host and you can also do the same on the server you are connecting from, while maintaining the remote SSH session.
+
+You can move files using commands such as:
+
+get
+-receives the file from the remote machine to the local machine
+
+put
+-uploads the file from the local machine to the remote machine (opposite of 'get')
+
+[jason@spacewalk ~]$ sftp student@192.168.122.74
+Connected to student@192.168.122.74.
+sftp> pwd
+Remote working directory: /home/student
+sftp> ls
+sftp> put test1
+Uploading test1 to /home/student/test1
+test1                                                                       100%    0     0.0KB/s   00:00    
+sftp> ls
+test1  
+
+[jason@spacewalk ~]$ sftp student@192.168.122.74
+Connected to student@192.168.122.74.
+sftp> lpwd
+Local working directory: /home/jason
+sftp> lls
+Desktop  Documents  Downloads  Music  Pictures	Public	Templates  test1  Videos
+sftp> ls
+test1  test2  
+sftp> get test2
+Fetching /home/student/test2 to test2
+sftp> lpwd
+Local working directory: /home/jason
+sftp> lls
+Desktop  Documents  Downloads  Music  Pictures	Public	Templates  test1  test2  Videos
+sftp> 
 
 
